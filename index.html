@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalAlert - Community Reporter</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- THEME & SETUP --- */
+        :root {
+            --bg-main: #f8fafc;
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-blue: #2563eb;
+            --accent-red: #dc2626;
+            --accent-yellow: #f59e0b;
+            --accent-green: #16a34a;
+            --font-family: 'Inter', sans-serif;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0; padding: 0; height: 100%; font-family: var(--font-family);
+            overflow: hidden; background-color: var(--bg-main);
+        }
+
+        /* --- MAIN LAYOUT --- */
+        #app-container { display: flex; height: 100vh; flex-direction: column; }
+
+        header {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary); padding: 0 25px;
+            font-size: 20px; font-weight: 600; border-bottom: 1px solid var(--border-color);
+            z-index: 1001; display: flex; align-items: center; justify-content: space-between; height: 65px;
+            flex-shrink: 0;
+        }
+        .header-title { display: flex; align-items: center; gap: 12px; }
+        .header-title .fa-location-dot { color: var(--accent-blue); }
+        .header-controls { display: flex; align-items: center; gap: 20px; }
+        #header-weather { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 500; color: var(--text-secondary); }
+        #sosBtn { background-color: var(--accent-red); color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background-color 0.2s; }
+        #sosBtn:hover { background-color: #f87171; }
+
+        #main-content { display: flex; flex-grow: 1; height: calc(100% - 65px); }
+
+        /* --- SIDEBAR --- */
+        #sidebar {
+            width: 380px; background-color: var(--bg-glass); backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
+        }
+        #sidebar-view-container { flex-grow: 1; overflow-y: auto; }
+        .sidebar-view { padding: 0; }
+
+        #alert-list-view h3, #alert-detail-view h3 {
+            padding: 15px 20px; font-size: 14px; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--text-secondary); background-color: #f8fafc;
+            border-bottom: 1px solid var(--border-color); margin: 0;
+        }
+
+        /* Filter Buttons */
+        #filter-bar { padding: 10px 15px; display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); }
+        .filter-btn { background-color: #e2e8f0; border: none; border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 500; cursor: pointer; }
+        .filter-btn.active { background-color: var(--accent-blue); color: white; }
+
+        /* Alert & News Lists */
+        #alert-list, #news-list { list-style-type: none; padding: 0; margin: 0; }
+        .alert-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--border-color); border-left: 4px solid transparent; transition: background-color 0.2s; }
+        .alert-item:hover { background-color: #f8fafc; }
+        .alert-item.selected { background-color: #eff6ff; border-left-color: var(--accent-blue); }
+        .alert-item strong { display: block; margin-bottom: 5px; font-size: 15px; font-weight: 600; color: var(--text-primary); }
+        .alert-item span { color: var(--text-secondary); font-size: 14px; }
+
+        /* Alert Detail View */
+        #alert-detail-view .detail-content { padding: 20px; }
+        .detail-header { border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px; }
+        .detail-title { font-size: 20px; font-weight: 600; margin: 0; }
+        .detail-meta { font-size: 12px; color: var(--text-secondary); }
+        .detail-description { line-height: 1.6; color: var(--text-secondary); }
+        .back-button { background: none; border: none; color: var(--accent-blue); font-weight: 500; font-size: 14px; cursor: pointer; padding: 15px 20px; display:flex; align-items:center; gap: 8px; width: 100%; text-align: left; }
+        .back-button:hover { background-color: #f8fafc; }
+
+        /* Skeleton Loader */
+        .skeleton { background-color: #e2e8f0; border-radius: 4px; animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .skeleton-item { padding: 15px 20px; border-bottom: 1px solid var(--border-color); }
+        .skeleton-title { height: 16px; width: 40%; margin-bottom: 8px; }
+        .skeleton-text { height: 14px; width: 90%; }
+
+        /* --- MAP --- */
+        #map-container { flex-grow: 1; position: relative; }
+        #map { width: 100%; height: 100%; }
+        #reportBtn {
+            position: absolute; bottom: 25px; right: 25px; z-index: 1000; width: 56px; height: 56px;
+            background-color: var(--accent-blue); color: white; border: none; border-radius: 50%;
+            box-shadow: var(--shadow-lg); cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 22px; transition: transform 0.2s;
+        }
+        #reportBtn:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // --- APPLICATION OBJECT (Namespace for stability) ---
+            const LocalAlertApp = {
+                // --- STATE ---
+                state: {
+                    map: null,
+                    alerts: [],
+                    news: [],
+                    markers: {},
+                    currentFilter: 'All',
+                    selectedAlertId: null,
+                },
+
+                // --- MOCK DATA (Expanded) ---
+                mockData: {
+                    reports: [
+                        { id: 1, lat: 13.083, lon: 80.282, category: 'Traffic', title: 'Heavy Congestion', description: 'Major traffic jam reported near Chennai Central Station due to a VIP movement. Avoid this route if possible.', user: 'User123', timestamp: '2025-08-02T14:30:00Z' },
+                        { id: 2, lat: 13.047, lon: 80.255, category: 'Utility', title: 'Power Outage', description: 'Unscheduled power cut in the T. Nagar area. TANGEDCO has been notified. Expected to be resolved in 2 hours.', user: 'Resident45', timestamp: '2025-08-02T13:00:00Z' },
+                        { id: 3, lat: 13.056, lon: 80.282, category: 'Safety', title: 'Waterlogging', description: 'Severe waterlogging near the entrance of Marina Beach after a short spell of heavy rain. Commuters are advised caution.', user: 'Anonymous', timestamp: '2025-08-02T12:15:00Z' },
+                        { id: 4, lat: 13.06, lon: 80.249, category: 'Traffic', title: 'Accident Reported', description: 'A two-wheeler accident on Anna Salai has slowed down traffic. Emergency services are on the scene.', user: 'CommuterX', timestamp: '2025-08-02T11:50:00Z' },
+                        { id: 5, lat: 12.99, lon: 80.22, category: 'Safety', title: 'Fallen Tree', description: 'A large tree has fallen and is blocking a side road near Guindy National Park.', user: 'GreenChennai', timestamp: '2025-08-02T10:05:00Z' },
+                    ],
+                    news: [
+                        { id: 1, headline: "Metro Water Supply Disrupted in Adyar", source: "Chennai Metro Water", timestamp: "2h ago", snippet: "Scheduled maintenance will affect water supply in several zones on Saturday." },
+                        { id: 2, headline: "New Traffic Diversions Near Tidel Park", source: "City Traffic Dept.", timestamp: "8h ago", snippet: "Due to ongoing flyover construction, new traffic patterns will be in effect starting Monday." },
+                        { id: 3, headline: "Fever Camps Set Up in Royapuram", source: "Greater Chennai Corporation", timestamp: "1 day ago", snippet: "As a precautionary measure against seasonal illnesses, GCC has established 15 mobile fever camps." },
+                    ],
+                    weather: { location: "Chennai", temperature: 31, icon: "fa-sun" }
+                },
+
+                // --- INITIALIZATION ---
+                init() {
+                    this.buildLayout();
+                    this.elements = this.cacheDOMElements();
+                    this.setupMap();
+                    this.attachEventListeners();
+                    this.showLoadingState();
+                    
+                    // Simulate fetching data
+                    setTimeout(() => {
+                        this.loadData();
+                        this.renderAll();
+                    }, 1500);
+                },
+
+                // --- SETUP FUNCTIONS ---
+                buildLayout() {
+                    document.getElementById('root').innerHTML = `
+                        <div id="app-container">
+                            <header>
+                                <div class="header-title"><i class="fa-solid fa-location-dot"></i><span>LocalAlert</span></div>
+                                <div class="header-controls">
+                                    <div id="header-weather"></div>
+                                    <button id="sosBtn"><i class="fa-solid fa-bell"></i> SOS</button>
+                                </div>
+                            </header>
+                            <main id="main-content">
+                                <aside id="sidebar">
+                                    <div id="sidebar-view-container"></div>
+                                </aside>
+                                <div id="map-container">
+                                    <div id="map"></div>
+                                    <button id="reportBtn" title="Report a Hazard"><i class="fa-solid fa-plus"></i></button>
+                                </div>
+                            </main>
+                        </div>
+                    `;
+                },
+                
+                cacheDOMElements() {
+                    return { sidebarViewContainer: document.getElementById('sidebar-view-container'), weatherDisplay: document.getElementById('header-weather'), };
+                },
+
+                setupMap() {
+                    this.state.map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 13);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; CARTO'
+                    }).addTo(this.state.map);
+                    L.control.zoom({ position: 'topright' }).addTo(this.state.map);
+                },
+
+                loadData() {
+                    this.state.alerts = this.mockData.reports;
+                    this.state.news = this.mockData.news;
+                },
+
+                // --- RENDER FUNCTIONS ---
+                renderAll() {
+                    this.renderAlertListView();
+                    this.renderMapMarkers();
+                    this.renderWeather();
+                },
+
+                showLoadingState() {
+                    let skeletonHTML = `<h3>Active Alerts</h3><div id="filter-bar"></div>`;
+                    for (let i = 0; i < 5; i++) {
+                        skeletonHTML += `<div class="skeleton-item"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div></div>`;
+                    }
+                    this.elements.sidebarViewContainer.innerHTML = skeletonHTML;
+                },
+
+                renderAlertListView() {
+                    const filteredAlerts = this.state.currentFilter === 'All' 
+                        ? this.state.alerts 
+                        : this.state.alerts.filter(a => a.category === this.state.currentFilter);
+
+                    const listHTML = filteredAlerts.map(alert => `<li class="alert-item" data-id="${alert.id}"><strong>${alert.title}</strong><span>${alert.category} Report</span></li>`).join('');
+
+                    this.elements.sidebarViewContainer.innerHTML = `
+                        <div id="alert-list-view" class="sidebar-view">
+                            <h3>Active Alerts (${filteredAlerts.length})</h3>
+                            <div id="filter-bar">
+                                <button class="filter-btn ${this.state.currentFilter === 'All' ? 'active' : ''}" data-filter="All">All</button>
+                                <button class="filter-btn ${this.state.currentFilter === 'Traffic' ? 'active' : ''}" data-filter="Traffic">Traffic</button>
+                                <button class="filter-btn ${this.state.currentFilter === 'Utility' ? 'active' : ''}" data-filter="Utility">Utility</button>
+                                <button class="filter-btn ${this.state.currentFilter === 'Safety' ? 'active' : ''}" data-filter="Safety">Safety</button>
+                            </div>
+                            <ul id="alert-list">${listHTML}</ul>
+                        </div>
+                    `;
+                },
+                
+                renderAlertDetailView(alertId) {
+                    const alert = this.state.alerts.find(a => a.id === alertId);
+                    if (!alert) return;
+
+                    this.elements.sidebarViewContainer.innerHTML = `
+                        <div id="alert-detail-view" class="sidebar-view">
+                            <button class="back-button"><i class="fa-solid fa-arrow-left"></i> Back to Alerts</button>
+                            <div class="detail-content">
+                                <div class="detail-header">
+                                    <h2 class="detail-title">${alert.title}</h2>
+                                    <p class="detail-meta">Reported by ${alert.user} &bull; ${new Date(alert.timestamp).toLocaleString()}</p>
+                                </div>
+                                <p class="detail-description">${alert.description}</p>
+                            </div>
+                        </div>
+                    `;
+                },
+                
+                renderWeather() {
+                    const weather = this.mockData.weather;
+                    this.elements.weatherDisplay.innerHTML = `<i class="fa-solid ${weather.icon}"></i><span>${weather.temperature}&deg;C</span>`;
+                },
+
+                renderMapMarkers() { /* ... unchanged ... */ },
+                
+                // --- EVENT LISTENERS & HANDLERS ---
+                attachEventListeners() {
+                    this.elements.sidebarViewContainer.addEventListener('click', e => {
+                        if (e.target.matches('.filter-btn')) {
+                            this.state.currentFilter = e.target.dataset.filter;
+                            this.renderAlertListView();
+                            this.renderMapMarkers();
+                        }
+                        if (e.target.closest('.alert-item')) {
+                            const id = parseInt(e.target.closest('.alert-item').dataset.id);
+                            this.state.selectedAlertId = id;
+                            this.renderAlertDetailView(id);
+                        }
+                        if (e.target.matches('.back-button')) {
+                            this.state.selectedAlertId = null;
+                            this.renderAlertListView();
+                        }
+                    });
+                },
+
+                // --- ANIMATIONS ---
+                playIntroAnimation() {
+                    gsap.from("header", { duration: 0.6, y: -80, ease: "power3.out", delay: 0.2 });
+                    gsap.from("#sidebar", { duration: 0.6, x: -380, ease: "power3.out", delay: 0.4 });
+                    gsap.from("#map-container", { duration: 0.6, opacity: 0, ease: "power3.out", delay: 0.6 });
+                },
+            };
+
+            // Start the application
+            LocalAlertApp.init();
+        });
+    </script>
+</body>
+</html>
