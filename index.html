@@ -16,7 +16,8 @@
         /* --- THEME & SETUP --- */
         :root {
             --bg-main: #f8fafc;
-            --bg-glass: rgba(255, 255, 255, 0.7);
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --bg-dark: rgba(30, 41, 59, 0.95);
             --border-color: #e2e8f0;
             --text-primary: #1e293b;
             --text-secondary: #64748b;
@@ -24,9 +25,13 @@
             --accent-red: #dc2626;
             --accent-yellow: #f59e0b;
             --accent-green: #16a34a;
+            --accent-purple: #7c3aed;
+            --accent-orange: #ea580c;
+            --accent-teal: #0d9488;
             --font-family: 'Inter', sans-serif;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
         }
 
         * { box-sizing: border-box; }
@@ -40,75 +45,199 @@
 
         header {
             background: var(--bg-glass);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             color: var(--text-primary); padding: 0 25px;
             font-size: 20px; font-weight: 600; border-bottom: 1px solid var(--border-color);
-            z-index: 1001; display: flex; align-items: center; justify-content: space-between; height: 65px;
-            flex-shrink: 0;
+            z-index: 1001; display: flex; align-items: center; justify-content: space-between; height: 70px;
+            flex-shrink: 0; box-shadow: var(--shadow);
         }
         .header-title { display: flex; align-items: center; gap: 12px; }
-        .header-title .fa-location-dot { color: var(--accent-blue); }
+        .header-title .fa-location-dot { color: var(--accent-blue); font-size: 24px; }
         .header-controls { display: flex; align-items: center; gap: 20px; }
-        #header-weather { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 500; color: var(--text-secondary); }
-        #sosBtn { background-color: var(--accent-red); color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background-color 0.2s; }
-        #sosBtn:hover { background-color: #f87171; }
+        #header-weather { 
+            display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 500; 
+            color: var(--text-secondary); padding: 8px 16px; background: rgba(255,255,255,0.5);
+            border-radius: 12px; backdrop-filter: blur(10px);
+        }
+        #sosBtn { 
+            background: linear-gradient(135deg, var(--accent-red), #f87171); 
+            color: white; border: none; border-radius: 12px; padding: 10px 16px; 
+            font-size: 15px; font-weight: 600; cursor: pointer; display: flex; 
+            align-items: center; gap: 8px; transition: all 0.3s; box-shadow: var(--shadow);
+        }
+        #sosBtn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
-        #main-content { display: flex; flex-grow: 1; height: calc(100% - 65px); }
+        #main-content { display: flex; flex-grow: 1; height: calc(100% - 70px); }
 
         /* --- SIDEBAR --- */
         #sidebar {
-            width: 380px; background-color: var(--bg-glass); backdrop-filter: blur(10px);
+            width: 420px; background-color: var(--bg-glass); backdrop-filter: blur(15px);
             border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; box-shadow: var(--shadow);
         }
-        #sidebar-view-container { flex-grow: 1; overflow-y: auto; }
-        .sidebar-view { padding: 0; }
+        #sidebar-tabs {
+            display: flex; background: rgba(255,255,255,0.5); border-bottom: 1px solid var(--border-color);
+        }
+        .sidebar-tab {
+            flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: 500;
+            transition: all 0.3s; background: none; border: none; color: var(--text-secondary);
+        }
+        .sidebar-tab.active {
+            background: white; color: var(--accent-blue); border-bottom: 3px solid var(--accent-blue);
+        }
+        .sidebar-tab:hover:not(.active) { background: rgba(255,255,255,0.7); }
 
-        #alert-list-view h3, #alert-detail-view h3 {
-            padding: 15px 20px; font-size: 14px; text-transform: uppercase;
-            letter-spacing: 0.5px; color: var(--text-secondary); background-color: #f8fafc;
+        #sidebar-view-container { flex-grow: 1; overflow-y: auto; }
+        .sidebar-view { padding: 0; display: none; }
+        .sidebar-view.active { display: block; }
+
+        .view-header {
+            padding: 20px; font-size: 16px; font-weight: 600;
+            color: var(--text-primary); background: rgba(255,255,255,0.7);
             border-bottom: 1px solid var(--border-color); margin: 0;
+            display: flex; align-items: center; gap: 10px;
         }
 
         /* Filter Buttons */
-        #filter-bar { padding: 10px 15px; display: flex; gap: 8px; border-bottom: 1px solid var(--border-color); }
-        .filter-btn { background-color: #e2e8f0; border: none; border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 500; cursor: pointer; }
-        .filter-btn.active { background-color: var(--accent-blue); color: white; }
+        #filter-bar { padding: 15px; display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--border-color); }
+        .filter-btn { 
+            background: #e2e8f0; border: none; border-radius: 20px; padding: 8px 16px; 
+            font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.3s;
+        }
+        .filter-btn.active { background: var(--accent-blue); color: white; transform: scale(1.05); }
+        .filter-btn:hover:not(.active) { background: #cbd5e1; }
 
         /* Alert & News Lists */
-        #alert-list, #news-list { list-style-type: none; padding: 0; margin: 0; }
-        .alert-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid var(--border-color); border-left: 4px solid transparent; transition: background-color 0.2s; }
-        .alert-item:hover { background-color: #f8fafc; }
-        .alert-item.selected { background-color: #eff6ff; border-left-color: var(--accent-blue); }
-        .alert-item strong { display: block; margin-bottom: 5px; font-size: 15px; font-weight: 600; color: var(--text-primary); }
-        .alert-item span { color: var(--text-secondary); font-size: 14px; }
+        #alert-list, #news-list, #climate-list, #policy-list { list-style-type: none; padding: 0; margin: 0; }
+        .list-item { 
+            padding: 20px; cursor: pointer; border-bottom: 1px solid var(--border-color); 
+            border-left: 4px solid transparent; transition: all 0.3s; position: relative;
+        }
+        .list-item:hover { background: rgba(255,255,255,0.8); transform: translateX(4px); }
+        .list-item.selected { background: #eff6ff; border-left-color: var(--accent-blue); }
+        .list-item strong { 
+            display: block; margin-bottom: 8px; font-size: 15px; font-weight: 600; 
+            color: var(--text-primary); line-height: 1.4;
+        }
+        .list-item .meta { 
+            color: var(--text-secondary); font-size: 13px; margin-bottom: 6px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .list-item .description { color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
 
-        /* Alert Detail View */
-        #alert-detail-view .detail-content { padding: 20px; }
-        .detail-header { border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px; }
-        .detail-title { font-size: 20px; font-weight: 600; margin: 0; }
-        .detail-meta { font-size: 12px; color: var(--text-secondary); }
-        .detail-description { line-height: 1.6; color: var(--text-secondary); }
-        .back-button { background: none; border: none; color: var(--accent-blue); font-weight: 500; font-size: 14px; cursor: pointer; padding: 15px 20px; display:flex; align-items:center; gap: 8px; width: 100%; text-align: left; }
-        .back-button:hover { background-color: #f8fafc; }
+        /* Category badges */
+        .category-badge {
+            display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 11px;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .category-traffic { background: #fef3c7; color: #92400e; }
+        .category-utility { background: #dbeafe; color: #1e40af; }
+        .category-safety { background: #fee2e2; color: #dc2626; }
+        .category-news { background: #f3e8ff; color: #7c3aed; }
+        .category-climate { background: #dcfce7; color: #166534; }
+        .category-policy { background: #fef2f2; color: #b91c1c; }
+
+        /* Detail View */
+        .detail-view .detail-content { padding: 25px; }
+        .detail-header { border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px; }
+        .detail-title { font-size: 22px; font-weight: 700; margin: 0; line-height: 1.3; }
+        .detail-meta { font-size: 13px; color: var(--text-secondary); margin-top: 8px; }
+        .detail-description { line-height: 1.6; color: var(--text-secondary); font-size: 15px; }
+        .back-button { 
+            background: none; border: none; color: var(--accent-blue); font-weight: 500; 
+            font-size: 14px; cursor: pointer; padding: 18px 25px; display: flex; 
+            align-items: center; gap: 8px; width: 100%; text-align: left; transition: all 0.3s;
+        }
+        .back-button:hover { background: rgba(255,255,255,0.8); }
+
+        /* Progress indicators for climate goals */
+        .progress-bar {
+            width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;
+            margin: 8px 0;
+        }
+        .progress-fill {
+            height: 100%; background: linear-gradient(90deg, var(--accent-green), var(--accent-teal));
+            transition: width 0.5s ease;
+        }
+        .progress-text {
+            font-size: 12px; color: var(--text-secondary); margin-top: 4px;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;
+        }
+        .action-btn {
+            padding: 8px 16px; border: none; border-radius: 8px; font-size: 13px;
+            font-weight: 500; cursor: pointer; transition: all 0.3s; display: flex;
+            align-items: center; gap: 6px;
+        }
+        .btn-primary { background: var(--accent-blue); color: white; }
+        .btn-secondary { background: #e2e8f0; color: var(--text-primary); }
+        .btn-success { background: var(--accent-green); color: white; }
+        .action-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
 
         /* Skeleton Loader */
-        .skeleton { background-color: #e2e8f0; border-radius: 4px; animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .skeleton-item { padding: 15px 20px; border-bottom: 1px solid var(--border-color); }
-        .skeleton-title { height: 16px; width: 40%; margin-bottom: 8px; }
-        .skeleton-text { height: 14px; width: 90%; }
+        .skeleton { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); border-radius: 4px; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
+        .skeleton-item { padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .skeleton-title { height: 16px; width: 60%; margin-bottom: 12px; }
+        .skeleton-text { height: 14px; width: 90%; margin-bottom: 8px; }
+        .skeleton-meta { height: 12px; width: 40%; }
 
         /* --- MAP --- */
         #map-container { flex-grow: 1; position: relative; }
         #map { width: 100%; height: 100%; }
-        #reportBtn {
-            position: absolute; bottom: 25px; right: 25px; z-index: 1000; width: 56px; height: 56px;
-            background-color: var(--accent-blue); color: white; border: none; border-radius: 50%;
-            box-shadow: var(--shadow-lg); cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 22px; transition: transform 0.2s;
+        
+        /* Floating Action Buttons */
+        .fab-container {
+            position: absolute; bottom: 25px; right: 25px; z-index: 1000;
+            display: flex; flex-direction: column; gap: 15px;
         }
-        #reportBtn:hover { transform: scale(1.1); }
+        .fab {
+            width: 56px; height: 56px; border: none; border-radius: 50%;
+            box-shadow: var(--shadow-xl); cursor: pointer; display: flex; 
+            align-items: center; justify-content: center; font-size: 20px; 
+            transition: all 0.3s; font-weight: 600;
+        }
+        .fab:hover { transform: scale(1.1) translateY(-2px); }
+        .fab-primary { background: linear-gradient(135deg, var(--accent-blue), #3b82f6); color: white; }
+        .fab-secondary { background: linear-gradient(135deg, var(--accent-green), #22c55e); color: white; }
+
+        /* Custom Map Popups */
+        .custom-popup {
+            font-family: var(--font-family);
+        }
+        .popup-header {
+            font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);
+        }
+        .popup-meta {
+            font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;
+        }
+        .popup-description {
+            font-size: 14px; line-height: 1.4; color: var(--text-secondary);
+        }
+        .popup-actions {
+            margin-top: 12px; display: flex; gap: 8px;
+        }
+        .popup-btn {
+            padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px;
+            cursor: pointer; transition: all 0.3s;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #sidebar { width: 100%; position: absolute; left: -100%; transition: left 0.3s; z-index: 1002; }
+            #sidebar.mobile-open { left: 0; }
+            .fab-container { bottom: 20px; right: 20px; }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out; }
     </style>
 </head>
 <body>
@@ -120,33 +249,52 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             
-            // --- APPLICATION OBJECT (Namespace for stability) ---
+            // --- APPLICATION OBJECT (Enhanced) ---
             const LocalAlertApp = {
                 // --- STATE ---
                 state: {
                     map: null,
                     alerts: [],
                     news: [],
+                    climateGoals: [],
+                    policies: [],
                     markers: {},
                     currentFilter: 'All',
-                    selectedAlertId: null,
+                    currentTab: 'alerts',
+                    selectedItemId: null,
                 },
 
-                // --- MOCK DATA (Expanded) ---
+                // --- ENHANCED MOCK DATA ---
                 mockData: {
                     reports: [
-                        { id: 1, lat: 13.083, lon: 80.282, category: 'Traffic', title: 'Heavy Congestion', description: 'Major traffic jam reported near Chennai Central Station due to a VIP movement. Avoid this route if possible.', user: 'User123', timestamp: '2025-08-02T14:30:00Z' },
-                        { id: 2, lat: 13.047, lon: 80.255, category: 'Utility', title: 'Power Outage', description: 'Unscheduled power cut in the T. Nagar area. TANGEDCO has been notified. Expected to be resolved in 2 hours.', user: 'Resident45', timestamp: '2025-08-02T13:00:00Z' },
-                        { id: 3, lat: 13.056, lon: 80.282, category: 'Safety', title: 'Waterlogging', description: 'Severe waterlogging near the entrance of Marina Beach after a short spell of heavy rain. Commuters are advised caution.', user: 'Anonymous', timestamp: '2025-08-02T12:15:00Z' },
-                        { id: 4, lat: 13.06, lon: 80.249, category: 'Traffic', title: 'Accident Reported', description: 'A two-wheeler accident on Anna Salai has slowed down traffic. Emergency services are on the scene.', user: 'CommuterX', timestamp: '2025-08-02T11:50:00Z' },
-                        { id: 5, lat: 12.99, lon: 80.22, category: 'Safety', title: 'Fallen Tree', description: 'A large tree has fallen and is blocking a side road near Guindy National Park.', user: 'GreenChennai', timestamp: '2025-08-02T10:05:00Z' },
+                        { id: 1, lat: 13.083, lon: 80.282, category: 'Traffic', title: 'Heavy Congestion on Anna Salai', description: 'Major traffic jam reported near Chennai Central Station due to a VIP movement. Multiple lanes blocked. Expect 30-45 minute delays.', user: 'CommutePro', timestamp: '2025-01-15T14:30:00Z', severity: 'high' },
+                        { id: 2, lat: 13.047, lon: 80.255, category: 'Utility', title: 'Scheduled Power Maintenance', description: 'TANGEDCO planned maintenance in T. Nagar area from 10 AM to 4 PM. Backup generators available at community centers.', user: 'TNEBOfficial', timestamp: '2025-01-15T13:00:00Z', severity: 'medium' },
+                        { id: 3, lat: 13.056, lon: 80.282, category: 'Safety', title: 'Marina Beach Waterlogging', description: 'Heavy rain caused waterlogging near Marina Beach entrance. Coast Guard advises caution. Alternative parking available.', user: 'ChennaiCoastGuard', timestamp: '2025-01-15T12:15:00Z', severity: 'high' },
+                        { id: 4, lat: 13.06, lon: 80.249, category: 'Traffic', title: 'Vehicle Breakdown - Anna Salai', description: 'Two-wheeler breakdown on Anna Salai main road. Traffic police redirecting vehicles. Tow service on the way.', user: 'TrafficControl', timestamp: '2025-01-15T11:50:00Z', severity: 'low' },
+                        { id: 5, lat: 12.99, lon: 80.22, category: 'Safety', title: 'Tree Removal Operation', description: 'Corporation crew removing fallen tree near Guindy Park. Road partially blocked. Expected clearance by evening.', user: 'ChennaiCorp', timestamp: '2025-01-15T10:05:00Z', severity: 'medium' },
                     ],
                     news: [
-                        { id: 1, headline: "Metro Water Supply Disrupted in Adyar", source: "Chennai Metro Water", timestamp: "2h ago", snippet: "Scheduled maintenance will affect water supply in several zones on Saturday." },
-                        { id: 2, headline: "New Traffic Diversions Near Tidel Park", source: "City Traffic Dept.", timestamp: "8h ago", snippet: "Due to ongoing flyover construction, new traffic patterns will be in effect starting Monday." },
-                        { id: 3, headline: "Fever Camps Set Up in Royapuram", source: "Greater Chennai Corporation", timestamp: "1 day ago", snippet: "As a precautionary measure against seasonal illnesses, GCC has established 15 mobile fever camps." },
+                        { id: 1, lat: 13.04, lon: 80.26, headline: "New Metro Line Extension Approved", source: "Chennai Metro Rail", timestamp: "2h ago", snippet: "Phase 3 extension to cover OMR and ECR corridors approved by TN government. Construction to begin next quarter.", category: 'infrastructure' },
+                        { id: 2, lat: 13.08, lon: 80.28, headline: "Digital Tamil Nadu Initiative Launch", source: "TN IT Department", timestamp: "4h ago", snippet: "State-wide digital literacy program launched targeting 1 million citizens. Free courses available in all districts.", category: 'technology' },
+                        { id: 3, lat: 13.05, lon: 80.24, headline: "Monsoon Preparedness Drive", source: "Greater Chennai Corporation", timestamp: "8h ago", snippet: "Corporation completes desilting of 200+ storm water drains. Emergency response teams activated.", category: 'weather' },
+                        { id: 4, lat: 13.07, lon: 80.25, headline: "Free WiFi Expansion in Parks", source: "Smart City Mission", timestamp: "12h ago", snippet: "High-speed internet access now available in 50+ public parks across Chennai under Smart City initiative.", category: 'infrastructure' },
+                        { id: 5, lat: 13.02, lon: 80.23, headline: "Beach Cleanup Drive Success", source: "Environmental Dept", timestamp: "1 day ago", snippet: "Weekend cleanup drive removes 5 tons of plastic waste from Marina Beach. 2000+ volunteers participated.", category: 'environment' },
                     ],
-                    weather: { location: "Chennai", temperature: 31, icon: "fa-sun" }
+                    climateGoals: [
+                        { id: 1, title: "Carbon Neutral Chennai 2030", description: "Achieve net-zero carbon emissions across the city by 2030 through renewable energy adoption and green transportation.", progress: 35, target: "2030", actions: ["Solar rooftop program", "EV charging infrastructure", "Green building certification"], status: "in-progress" },
+                        { id: 2, title: "Plastic-Free Tamil Nadu", description: "Eliminate single-use plastics and achieve 90% plastic waste recycling statewide.", progress: 68, target: "2025", actions: ["Plastic ban enforcement", "Recycling centers", "Alternative packaging"], status: "in-progress" },
+                        { id: 3, title: "Forest Cover Restoration", description: "Increase forest cover to 25% of total geographical area through large-scale tree plantation drives.", progress: 45, target: "2028", actions: ["Miyawaki forests", "Community plantations", "Biodiversity parks"], status: "in-progress" },
+                        { id: 4, title: "Water Conservation Mission", description: "Ensure water security through rainwater harvesting and groundwater recharge projects.", progress: 72, target: "2026", actions: ["Rainwater harvesting", "Lake restoration", "Drip irrigation"], status: "in-progress" },
+                        { id: 5, title: "Clean Air Initiative", description: "Reduce air pollution levels by 40% through industrial monitoring and vehicle emission controls.", progress: 28, target: "2027", actions: ["Emission monitoring", "Public transport", "Industry compliance"], status: "in-progress" },
+                    ],
+                    policies: [
+                        { id: 1, title: "Free Higher Education for Girls", description: "Complete fee waiver for female students in government colleges and universities across Tamil Nadu.", eligibility: "Female students in govt institutions", benefits: ["100% fee waiver", "Free textbooks", "Scholarship support"], contact: "1800-425-2002", department: "Higher Education", status: "active" },
+                        { id: 2, title: "Skill Development Program", description: "Free vocational training in emerging technologies for students and recent graduates.", eligibility: "18-25 years, TN domicile", benefits: ["Free training", "Placement assistance", "Monthly stipend"], contact: "1800-425-1234", department: "Skill Development", status: "active" },
+                        { id: 3, title: "Student Innovation Fund", description: "Financial support for student startups and innovative projects in technology and social sectors.", eligibility: "College students with innovative ideas", benefits: ["₹5 lakh funding", "Mentorship", "Incubation support"], contact: "1800-425-5678", department: "Innovation & Entrepreneurship", status: "active" },
+                        { id: 4, title: "Digital Learning Initiative", description: "Free tablets and internet connectivity for students from economically weaker sections.", eligibility: "Family income < ₹2.5 lakh/year", benefits: ["Free tablet", "Internet data", "Online courses"], contact: "1800-425-9999", department: "School Education", status: "active" },
+                        { id: 5, title: "Sports Excellence Program", description: "Comprehensive support for talented students in various sports disciplines.", eligibility: "Students with proven sports talent", benefits: ["Coaching support", "Equipment", "Competition funding"], contact: "1800-425-7777", department: "Youth Welfare & Sports", status: "active" },
+                    ],
+                    weather: { location: "Chennai", temperature: 31, humidity: 75, icon: "fa-sun", condition: "Sunny" }
                 },
 
                 // --- INITIALIZATION ---
@@ -161,6 +309,7 @@
                     setTimeout(() => {
                         this.loadData();
                         this.renderAll();
+                        this.playIntroAnimation();
                     }, 1500);
                 },
 
@@ -169,19 +318,43 @@
                     document.getElementById('root').innerHTML = `
                         <div id="app-container">
                             <header>
-                                <div class="header-title"><i class="fa-solid fa-location-dot"></i><span>LocalAlert</span></div>
+                                <div class="header-title">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    <span>LocalAlert Pro</span>
+                                </div>
                                 <div class="header-controls">
                                     <div id="header-weather"></div>
-                                    <button id="sosBtn"><i class="fa-solid fa-bell"></i> SOS</button>
+                                    <button id="sosBtn"><i class="fa-solid fa-shield-halved"></i> Emergency</button>
                                 </div>
                             </header>
                             <main id="main-content">
                                 <aside id="sidebar">
+                                    <div id="sidebar-tabs">
+                                        <button class="sidebar-tab active" data-tab="alerts">
+                                            <i class="fa-solid fa-triangle-exclamation"></i> Alerts
+                                        </button>
+                                        <button class="sidebar-tab" data-tab="news">
+                                            <i class="fa-solid fa-newspaper"></i> News
+                                        </button>
+                                        <button class="sidebar-tab" data-tab="climate">
+                                            <i class="fa-solid fa-leaf"></i> Climate
+                                        </button>
+                                        <button class="sidebar-tab" data-tab="policies">
+                                            <i class="fa-solid fa-graduation-cap"></i> Policies
+                                        </button>
+                                    </div>
                                     <div id="sidebar-view-container"></div>
                                 </aside>
                                 <div id="map-container">
                                     <div id="map"></div>
-                                    <button id="reportBtn" title="Report a Hazard"><i class="fa-solid fa-plus"></i></button>
+                                    <div class="fab-container">
+                                        <button class="fab fab-secondary" id="newsBtn" title="Toggle News Markers">
+                                            <i class="fa-solid fa-newspaper"></i>
+                                        </button>
+                                        <button class="fab fab-primary" id="reportBtn" title="Report an Issue">
+                                            <i class="fa-solid fa-plus"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </main>
                         </div>
@@ -189,35 +362,59 @@
                 },
                 
                 cacheDOMElements() {
-                    return { sidebarViewContainer: document.getElementById('sidebar-view-container'), weatherDisplay: document.getElementById('header-weather'), };
+                    return { 
+                        sidebarViewContainer: document.getElementById('sidebar-view-container'), 
+                        weatherDisplay: document.getElementById('header-weather'),
+                        sidebarTabs: document.querySelectorAll('.sidebar-tab')
+                    };
                 },
 
                 setupMap() {
-                    this.state.map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 13);
+                    this.state.map = L.map('map', { zoomControl: false }).setView([13.0827, 80.2707], 12);
+                    
+                    // Enhanced map tiles
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                        attribution: '&copy; CARTO'
+                        attribution: '&copy; CARTO | &copy; LocalAlert Pro',
+                        maxZoom: 19
                     }).addTo(this.state.map);
+                    
                     L.control.zoom({ position: 'topright' }).addTo(this.state.map);
                 },
 
                 loadData() {
                     this.state.alerts = this.mockData.reports;
                     this.state.news = this.mockData.news;
+                    this.state.climateGoals = this.mockData.climateGoals;
+                    this.state.policies = this.mockData.policies;
                 },
 
                 // --- RENDER FUNCTIONS ---
                 renderAll() {
-                    this.renderAlertListView();
+                    this.renderCurrentView();
                     this.renderMapMarkers();
                     this.renderWeather();
                 },
 
                 showLoadingState() {
-                    let skeletonHTML = `<h3>Active Alerts</h3><div id="filter-bar"></div>`;
+                    let skeletonHTML = `<div class="view-header"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>`;
                     for (let i = 0; i < 5; i++) {
-                        skeletonHTML += `<div class="skeleton-item"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div></div>`;
+                        skeletonHTML += `
+                            <div class="skeleton-item">
+                                <div class="skeleton skeleton-title"></div>
+                                <div class="skeleton skeleton-meta"></div>
+                                <div class="skeleton skeleton-text"></div>
+                            </div>`;
                     }
                     this.elements.sidebarViewContainer.innerHTML = skeletonHTML;
+                },
+
+                renderCurrentView() {
+                    switch(this.state.currentTab) {
+                        case 'alerts': this.renderAlertListView(); break;
+                        case 'news': this.renderNewsListView(); break;
+                        case 'climate': this.renderClimateListView(); break;
+                        case 'policies': this.renderPoliciesListView(); break;
+                    }
                 },
 
                 renderAlertListView() {
@@ -225,11 +422,23 @@
                         ? this.state.alerts 
                         : this.state.alerts.filter(a => a.category === this.state.currentFilter);
 
-                    const listHTML = filteredAlerts.map(alert => `<li class="alert-item" data-id="${alert.id}"><strong>${alert.title}</strong><span>${alert.category} Report</span></li>`).join('');
+                    const listHTML = filteredAlerts.map(alert => `
+                        <li class="list-item alert-item" data-id="${alert.id}">
+                            <div class="meta">
+                                <span class="category-badge category-${alert.category.toLowerCase()}">${alert.category}</span>
+                                <span>${this.formatTimeAgo(alert.timestamp)}</span>
+                            </div>
+                            <strong>${alert.title}</strong>
+                            <div class="description">${alert.description.substring(0, 100)}...</div>
+                        </li>
+                    `).join('');
 
                     this.elements.sidebarViewContainer.innerHTML = `
-                        <div id="alert-list-view" class="sidebar-view">
-                            <h3>Active Alerts (${filteredAlerts.length})</h3>
+                        <div id="alert-list-view" class="sidebar-view active">
+                            <div class="view-header">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                Active Alerts (${filteredAlerts.length})
+                            </div>
                             <div id="filter-bar">
                                 <button class="filter-btn ${this.state.currentFilter === 'All' ? 'active' : ''}" data-filter="All">All</button>
                                 <button class="filter-btn ${this.state.currentFilter === 'Traffic' ? 'active' : ''}" data-filter="Traffic">Traffic</button>
@@ -240,59 +449,442 @@
                         </div>
                     `;
                 },
-                
-                renderAlertDetailView(alertId) {
-                    const alert = this.state.alerts.find(a => a.id === alertId);
-                    if (!alert) return;
+
+                renderNewsListView() {
+                    const listHTML = this.state.news.map(item => `
+                        <li class="list-item news-item" data-id="${item.id}">
+                            <div class="meta">
+                                <span class="category-badge category-news">${item.category}</span>
+                                <span>${item.timestamp}</span>
+                            </div>
+                            <strong>${item.headline}</strong>
+                            <div class="description">${item.snippet}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
+                                <i class="fa-solid fa-building"></i> ${item.source}
+                            </div>
+                        </li>
+                    `).join('');
 
                     this.elements.sidebarViewContainer.innerHTML = `
-                        <div id="alert-detail-view" class="sidebar-view">
-                            <button class="back-button"><i class="fa-solid fa-arrow-left"></i> Back to Alerts</button>
+                        <div id="news-list-view" class="sidebar-view active">
+                            <div class="view-header">
+                                <i class="fa-solid fa-newspaper"></i>
+                                Latest News (${this.state.news.length})
+                            </div>
+                            <ul id="news-list">${listHTML}</ul>
+                        </div>
+                    `;
+                },
+
+                renderClimateListView() {
+                    const listHTML = this.state.climateGoals.map(goal => `
+                        <li class="list-item climate-item" data-id="${goal.id}">
+                            <div class="meta">
+                                <span class="category-badge category-climate">${goal.status}</span>
+                                <span>Target: ${goal.target}</span>
+                            </div>
+                            <strong>${goal.title}</strong>
+                            <div class="description">${goal.description}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${goal.progress}%"></div>
+                            </div>
+                            <div class="progress-text">${goal.progress}% Complete</div>
+                        </li>
+                    `).join('');
+
+                    this.elements.sidebarViewContainer.innerHTML = `
+                        <div id="climate-list-view" class="sidebar-view active">
+                            <div class="view-header">
+                                <i class="fa-solid fa-leaf"></i>
+                                Climate Goals (${this.state.climateGoals.length})
+                            </div>
+                            <ul id="climate-list">${listHTML}</ul>
+                        </div>
+                    `;
+                },
+
+                renderPoliciesListView() {
+                    const listHTML = this.state.policies.map(policy => `
+                        <li class="list-item policy-item" data-id="${policy.id}">
+                            <div class="meta">
+                                <span class="category-badge category-policy">${policy.status}</span>
+                                <span>${policy.department}</span>
+                            </div>
+                            <strong>${policy.title}</strong>
+                            <div class="description">${policy.description}</div>
+                            <div class="action-buttons">
+                                <button class="action-btn btn-primary">
+                                    <i class="fa-solid fa-phone"></i> ${policy.contact}
+                                </button>
+                                <button class="action-btn btn-secondary">
+                                    <i class="fa-solid fa-info-circle"></i> Details
+                                </button>
+                            </div>
+                        </li>
+                    `).join('');
+
+                    this.elements.sidebarViewContainer.innerHTML = `
+                        <div id="policies-list-view" class="sidebar-view active">
+                            <div class="view-header">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                Student Policies (${this.state.policies.length})
+                            </div>
+                            <ul id="policy-list">${listHTML}</ul>
+                        </div>
+                    `;
+                },
+                
+                renderDetailView(type, itemId) {
+                    let item, title, icon;
+                    
+                    switch(type) {
+                        case 'alert':
+                            item = this.state.alerts.find(a => a.id === itemId);
+                            title = 'Alert Details';
+                            icon = 'fa-triangle-exclamation';
+                            break;
+                        case 'news':
+                            item = this.state.news.find(n => n.id === itemId);
+                            title = 'News Details';
+                            icon = 'fa-newspaper';
+                            break;
+                        case 'climate':
+                            item = this.state.climateGoals.find(c => c.id === itemId);
+                            title = 'Climate Goal Details';
+                            icon = 'fa-leaf';
+                            break;
+                        case 'policy':
+                            item = this.state.policies.find(p => p.id === itemId);
+                            title = 'Policy Details';
+                            icon = 'fa-graduation-cap';
+                            break;
+                    }
+                    
+                    if (!item) return;
+
+                    let content = '';
+                    if (type === 'climate') {
+                        content = `
                             <div class="detail-content">
                                 <div class="detail-header">
-                                    <h2 class="detail-title">${alert.title}</h2>
-                                    <p class="detail-meta">Reported by ${alert.user} &bull; ${new Date(alert.timestamp).toLocaleString()}</p>
+                                    <h2 class="detail-title">${item.title}</h2>
+                                    <p class="detail-meta">Target: ${item.target} • Progress: ${item.progress}%</p>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${item.progress}%"></div>
+                                    </div>
                                 </div>
-                                <p class="detail-description">${alert.description}</p>
+                                <p class="detail-description">${item.description}</p>
+                                <div style="margin-top: 20px;">
+                                    <h4>Key Actions:</h4>
+                                    <ul>
+                                        ${item.actions.map(action => `<li>${action}</li>`).join('')}
+                                    </ul>
+                                </div>
                             </div>
+                        `;
+                    } else if (type === 'policy') {
+                        content = `
+                            <div class="detail-content">
+                                <div class="detail-header">
+                                    <h2 class="detail-title">${item.title}</h2>
+                                    <p class="detail-meta">Department: ${item.department}</p>
+                                </div>
+                                <p class="detail-description">${item.description}</p>
+                                <div style="margin-top: 20px;">
+                                    <h4>Eligibility:</h4>
+                                    <p>${item.eligibility}</p>
+                                    <h4>Benefits:</h4>
+                                    <ul>
+                                        ${item.benefits.map(benefit => `<li>${benefit}</li>`).join('')}
+                                    </ul>
+                                    <div class="action-buttons">
+                                        <button class="action-btn btn-primary">
+                                            <i class="fa-solid fa-phone"></i> Call ${item.contact}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        content = `
+                            <div class="detail-content">
+                                <div class="detail-header">
+                                    <h2 class="detail-title">${item.title || item.headline}</h2>
+                                    <p class="detail-meta">
+                                        ${item.user ? `Reported by ${item.user}` : `Source: ${item.source}`} • 
+                                        ${item.timestamp ? this.formatTimeAgo(item.timestamp) : item.timestamp}
+                                    </p>
+                                </div>
+                                <p class="detail-description">${item.description || item.snippet}</p>
+                            </div>
+                        `;
+                    }
+
+                    this.elements.sidebarViewContainer.innerHTML = `
+                        <div class="detail-view">
+                            <button class="back-button">
+                                <i class="fa-solid fa-arrow-left"></i> Back to ${title.split(' ')[0]}s
+                            </button>
+                            ${content}
                         </div>
                     `;
                 },
                 
                 renderWeather() {
                     const weather = this.mockData.weather;
-                    this.elements.weatherDisplay.innerHTML = `<i class="fa-solid ${weather.icon}"></i><span>${weather.temperature}&deg;C</span>`;
+                    this.elements.weatherDisplay.innerHTML = `
+                        <i class="fa-solid ${weather.icon}"></i>
+                        <span>${weather.temperature}°C</span>
+                        <span style="margin-left: 5px; font-size: 14px;">${weather.condition}</span>
+                    `;
                 },
 
-                renderMapMarkers() { /* ... unchanged ... */ },
+                renderMapMarkers() {
+                    // Clear existing markers
+                    Object.values(this.state.markers).forEach(marker => {
+                        this.state.map.removeLayer(marker);
+                    });
+                    this.state.markers = {};
+
+                    // Enhanced icons for different categories
+                    const icons = {
+                        Traffic: { icon: 'fa-car', color: '#f59e0b', bg: '#fef3c7' },
+                        Utility: { icon: 'fa-bolt', color: '#2563eb', bg: '#dbeafe' },
+                        Safety: { icon: 'fa-shield-halved', color: '#dc2626', bg: '#fee2e2' },
+                        News: { icon: 'fa-newspaper', color: '#7c3aed', bg: '#f3e8ff' }
+                    };
+
+                    // Add alert markers
+                    this.state.alerts.forEach(alert => {
+                        if (this.state.currentFilter !== 'All' && alert.category !== this.state.currentFilter) return;
+                        
+                        const iconConfig = icons[alert.category];
+                        const customIcon = L.divIcon({
+                            html: `
+                                <div style="
+                                    background: ${iconConfig.bg}; 
+                                    border: 3px solid ${iconConfig.color}; 
+                                    border-radius: 50%; 
+                                    width: 40px; 
+                                    height: 40px; 
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center;
+                                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                                    animation: pulse 2s infinite;
+                                ">
+                                    <i class="fa-solid ${iconConfig.icon}" style="color: ${iconConfig.color}; font-size: 16px;"></i>
+                                </div>
+                                <style>
+                                    @keyframes pulse {
+                                        0% { transform: scale(1); }
+                                        50% { transform: scale(1.1); }
+                                        100% { transform: scale(1); }
+                                    }
+                                </style>
+                            `,
+                            className: 'custom-marker',
+                            iconSize: [40, 40],
+                            iconAnchor: [20, 20]
+                        });
+
+                        const marker = L.marker([alert.lat, alert.lon], { icon: customIcon })
+                            .bindPopup(`
+                                <div class="custom-popup">
+                                    <div class="popup-header">${alert.title}</div>
+                                    <div class="popup-meta">
+                                        <span class="category-badge category-${alert.category.toLowerCase()}">${alert.category}</span>
+                                        ${this.formatTimeAgo(alert.timestamp)}
+                                    </div>
+                                    <div class="popup-description">${alert.description}</div>
+                                    <div class="popup-actions">
+                                        <button class="popup-btn btn-primary" onclick="LocalAlertApp.showAlertDetail(${alert.id})">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            `, {
+                                maxWidth: 300,
+                                className: 'custom-popup-container'
+                            })
+                            .addTo(this.state.map);
+
+                        this.state.markers[`alert-${alert.id}`] = marker;
+                    });
+
+                    // Add news markers (if enabled)
+                    this.state.news.forEach(news => {
+                        const newsIcon = L.divIcon({
+                            html: `
+                                <div style="
+                                    background: linear-gradient(135deg, #7c3aed, #a855f7); 
+                                    border-radius: 50%; 
+                                    width: 35px; 
+                                    height: 35px; 
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center;
+                                    box-shadow: 0 4px 8px rgba(124,58,237,0.3);
+                                ">
+                                    <i class="fa-solid fa-newspaper" style="color: white; font-size: 14px;"></i>
+                                </div>
+                            `,
+                            className: 'news-marker',
+                            iconSize: [35, 35],
+                            iconAnchor: [17.5, 17.5]
+                        });
+
+                        const marker = L.marker([news.lat, news.lon], { icon: newsIcon })
+                            .bindPopup(`
+                                <div class="custom-popup">
+                                    <div class="popup-header">${news.headline}</div>
+                                    <div class="popup-meta">
+                                        <span class="category-badge category-news">${news.category}</span>
+                                        ${news.timestamp}
+                                    </div>
+                                    <div class="popup-description">${news.snippet}</div>
+                                    <div class="popup-actions">
+                                        <button class="popup-btn btn-primary" onclick="LocalAlertApp.showNewsDetail(${news.id})">
+                                            Read More
+                                        </button>
+                                    </div>
+                                </div>
+                            `, {
+                                maxWidth: 300,
+                                className: 'custom-popup-container'
+                            })
+                            .addTo(this.state.map);
+
+                        this.state.markers[`news-${news.id}`] = marker;
+                    });
+                },
                 
                 // --- EVENT LISTENERS & HANDLERS ---
                 attachEventListeners() {
+                    // Tab switching
+                    this.elements.sidebarTabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            this.switchTab(tab.dataset.tab);
+                        });
+                    });
+
+                    // Sidebar interactions
                     this.elements.sidebarViewContainer.addEventListener('click', e => {
                         if (e.target.matches('.filter-btn')) {
                             this.state.currentFilter = e.target.dataset.filter;
-                            this.renderAlertListView();
+                            this.renderCurrentView();
                             this.renderMapMarkers();
                         }
+                        
                         if (e.target.closest('.alert-item')) {
                             const id = parseInt(e.target.closest('.alert-item').dataset.id);
-                            this.state.selectedAlertId = id;
-                            this.renderAlertDetailView(id);
+                            this.state.selectedItemId = id;
+                            this.renderDetailView('alert', id);
                         }
+                        
+                        if (e.target.closest('.news-item')) {
+                            const id = parseInt(e.target.closest('.news-item').dataset.id);
+                            this.state.selectedItemId = id;
+                            this.renderDetailView('news', id);
+                        }
+                        
+                        if (e.target.closest('.climate-item')) {
+                            const id = parseInt(e.target.closest('.climate-item').dataset.id);
+                            this.state.selectedItemId = id;
+                            this.renderDetailView('climate', id);
+                        }
+                        
+                        if (e.target.closest('.policy-item')) {
+                            const id = parseInt(e.target.closest('.policy-item').dataset.id);
+                            this.state.selectedItemId = id;
+                            this.renderDetailView('policy', id);
+                        }
+                        
                         if (e.target.matches('.back-button')) {
-                            this.state.selectedAlertId = null;
-                            this.renderAlertListView();
+                            this.state.selectedItemId = null;
+                            this.renderCurrentView();
+                        }
+                    });
+
+                    // FAB buttons
+                    document.getElementById('reportBtn').addEventListener('click', () => {
+                        alert('Report feature would open here! This could connect to a form or camera.');
+                    });
+
+                    document.getElementById('newsBtn').addEventListener('click', () => {
+                        // Toggle news markers visibility
+                        this.toggleNewsMarkers();
+                    });
+
+                    // SOS button
+                    document.getElementById('sosBtn').addEventListener('click', () => {
+                        alert('Emergency services contacted! In a real app, this would contact police/ambulance.');
+                    });
+                },
+
+                switchTab(tabName) {
+                    this.state.currentTab = tabName;
+                    this.state.currentFilter = 'All';
+                    this.state.selectedItemId = null;
+                    
+                    // Update tab UI
+                    this.elements.sidebarTabs.forEach(tab => {
+                        tab.classList.toggle('active', tab.dataset.tab === tabName);
+                    });
+                    
+                    this.renderCurrentView();
+                    if (tabName === 'alerts') {
+                        this.renderMapMarkers();
+                    }
+                },
+
+                toggleNewsMarkers() {
+                    const newsMarkers = Object.keys(this.state.markers).filter(key => key.startsWith('news-'));
+                    const isVisible = newsMarkers.some(key => this.state.map.hasLayer(this.state.markers[key]));
+                    
+                    newsMarkers.forEach(key => {
+                        if (isVisible) {
+                            this.state.map.removeLayer(this.state.markers[key]);
+                        } else {
+                            this.state.map.addLayer(this.state.markers[key]);
                         }
                     });
                 },
 
+                showAlertDetail(alertId) {
+                    this.switchTab('alerts');
+                    this.state.selectedItemId = alertId;
+                    this.renderDetailView('alert', alertId);
+                },
+
+                showNewsDetail(newsId) {
+                    this.switchTab('news');
+                    this.state.selectedItemId = newsId;
+                    this.renderDetailView('news', newsId);
+                },
+
+                formatTimeAgo(timestamp) {
+                    const now = new Date();
+                    const past = new Date(timestamp);
+                    const diff = Math.floor((now - past) / 1000);
+                    
+                    if (diff < 60) return 'Just now';
+                    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+                    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+                    return `${Math.floor(diff / 86400)}d ago`;
+                },
+
                 // --- ANIMATIONS ---
                 playIntroAnimation() {
-                    gsap.from("header", { duration: 0.6, y: -80, ease: "power3.out", delay: 0.2 });
-                    gsap.from("#sidebar", { duration: 0.6, x: -380, ease: "power3.out", delay: 0.4 });
-                    gsap.from("#map-container", { duration: 0.6, opacity: 0, ease: "power3.out", delay: 0.6 });
+                    gsap.from("header", { duration: 0.8, y: -80, ease: "power3.out", delay: 0.2 });
+                    gsap.from("#sidebar", { duration: 0.8, x: -420, ease: "power3.out", delay: 0.4 });
+                    gsap.from("#map-container", { duration: 0.8, opacity: 0, ease: "power3.out", delay: 0.6 });
+                    gsap.from(".fab", { duration: 0.6, scale: 0, ease: "back.out(1.7)", delay: 1.2, stagger: 0.1 });
                 },
             };
+
+            // Make functions globally accessible for popup buttons
+            window.LocalAlertApp = LocalAlertApp;
 
             // Start the application
             LocalAlertApp.init();
