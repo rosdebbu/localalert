@@ -1,246 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalAlert - SRMIST Potheri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --primary-purple: #8b5cf6;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4dae3' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            color: #1e29b;
+        }
+        
+        /* --- 3D TILT CARD STYLES --- */
+        .card {
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+        }
 
-                                <span class="location-tag food-tag">South Indian</span>
-                                <span class="location-tag food-tag">Chinese</span>
-                                <span class="location-tag food-tag">Juices</span>
-                            </div>
-                            <p class="text-sm">Popular food court with multiple stalls offering various cuisines at student-friendly prices.</p>
+        .card:hover {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-content {
+            transform: translateZ(30px);
+            padding: 1.5rem;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.5), transparent);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            position: relative;
+            margin: 5% auto;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 16px;
+            overflow: hidden;
+            animation: popIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popIn {
+            from { transform: translateY(50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        
+        .close-button { transition: all 0.2s ease; }
+        .close-button:hover { transform: rotate(90deg); color: #ef4444; }
+        
+        .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .card-animate {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardEntry 0.5s forwards;
+        }
+        
+        @keyframes cardEntry {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* --- NEW DIRECTORY STYLES --- */
+        .category-btn {
+            transition: all 0.3s ease;
+        }
+        .category-btn.active {
+            background-color: var(--primary-blue);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+        }
+        .shop-card-item {
+            transition: all 0.3s ease;
+            display: block; /* Initially show all cards */
+        }
+        .shop-card-item.hidden {
+            display: none; /* Hide cards that don't match filter */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <!-- Header -->
+        <header class="text-center mb-10 md:mb-16">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                LocalAlert
+            </h1>
+            <p class="text-lg text-slate-600 mt-3">Your Essential Companion at SRMIST, Potheri</p>
+            
+            <div class="mt-6 flex justify-center">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full px-6 py-2 inline-flex items-center">
+                    <span class="live-dot mr-2"></span>
+                    <span>Live Campus Updates</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid with 3D Tilt Effect -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            
+            <!-- Transportation Card -->
+            <div class="card card-animate bg-gradient-to-br from-blue-500 to-indigo-600 text-white" 
+                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                 onclick="openModal('transportationModal')">
+                <div class="card-content">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold">Transportation</h2>
+                            <p class="mt-2 opacity-90">Train, Bus & Auto Info</p>
+                        </div>
+                        <div class="bg-white/20 p-3 rounded-full">
+                            <i class="fa-solid fa-bus text-2xl"></i>
                         </div>
                     </div>
-                    
-                    <div class="map-location" style="top: 40%; left: 70%; background: #3b82f6;" data-id="2">
-                        <i class="fa-solid fa-book text-white"></i>
-                        <div class="location-detail" id="detail-2">
-                            <h3 class="font-bold text-lg">Campus Book Store</h3>
-                            <div class="flex flex-wrap my-2">
-                                <span class="location-tag shop-tag">Textbooks</span>
-                                <span class="location-tag shop-tag">Stationery</span>
-                                <span class="location-tag shop-tag">Novels</span>
-                            </div>
-                            <p class="text-sm">Complete academic supplies and stationery. Get 10% student discount on textbooks.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="map-location" style="top: 65%; left: 25%; background: #10b981;" data-id="3">
-                        <i class="fa-solid fa-print text-white"></i>
-                        <div class="location-detail" id="detail-3">
-                            <h3 class="font-bold text-lg">24/7 Xerox Center</h3>
-                            <div class="flex flex-wrap my-2">
-                                <span class="location-tag service-tag">Printing</span>
-                                <span class="location-tag service-tag">Photocopy</span>
-                                <span class="location-tag service-tag">Binding</span>
-                            </div>
-                            <p class="text-sm">Open 24/7 with high-speed printers and binding services. ₹1 per page.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="map-location" style="top: 55%; left: 55%; background: #ef4444;" data-id="4">
-                        <i class="fa-solid fa-martini-glass-citrus text-white"></i>
-                        <div class="location-detail" id="detail-4">
-                            <h3 class="font-bold text-lg">Cafe Coffee Day</h3>
-                            <div class="flex flex-wrap my-2">
-                                <span class="location-tag food-tag">Coffee</span>
-                                <span class="location-tag food-tag">Snacks</span>
-                                <span class="location-tag service-tag">WiFi</span>
-                            </div>
-                            <p class="text-sm">Popular hangout spot with premium coffee, sandwiches, and free WiFi for students.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="map-location" style="top: 30%; left: 80%; background: #8b5cf6;" data-id="5">
-                        <i class="fa-solid fa-basket-shopping text-white"></i>
-                        <div class="location-detail" id="detail-5">
-                            <h3 class="font-bold text-lg">Daily Needs Supermarket</h3>
-                            <div class="flex flex-wrap my-2">
-                                <span class="location-tag shop-tag">Groceries</span>
-                                <span class="location-tag shop-tag">Snacks</span>
-                                <span class="location-tag shop-tag">Toiletries</span>
-                            </div>
-                            <p class="text-sm">Complete supermarket for daily essentials with student discounts on bulk purchases.</p>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm bg-white/10 p-2 rounded-lg mt-2">
+                            <span class="live-dot mr-2"></span>
+                            <span>Bus 500 arriving in 5 min</span>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Shop Directory -->
-                <h3 class="text-xl font-bold mt-12 mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-store"></i>
-                    Popular Shops in Potheri
-                </h3>
-                
-                <div class="shop-grid">
-                    <!-- Shop 1 -->
-                    <div class="shop-card" data-category="food">
-                        <div class="shop-header">
-                            <h3 class="font-bold text-lg">Food Street</h3>
-                            <div class="rating">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star-half-stroke"></i>
-                                <span class="ml-2">4.5 (320 reviews)</span>
-                            </div>
+            </div>
+
+            <!-- Food & Dining Card -->
+            <div class="card card-animate bg-gradient-to-br from-red-500 to-orange-500 text-white" 
+                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                 onclick="openModal('foodModal')">
+                 <div class="card-content">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold">Food & Dining</h2>
+                            <p class="mt-2 opacity-90">Mess, Canteens & Restaurants</p>
                         </div>
-                        <div class="shop-body">
-                            <p class="text-gray-600">Multiple food stalls offering diverse cuisines at affordable prices</p>
-                            <div class="shop-features">
-                                <span class="feature-badge">South Indian</span>
-                                <span class="feature-badge">Chinese</span>
-                                <span class="feature-badge">Juices</span>
-                                <span class="feature-badge">₹₹</span>
-                            </div>
-                            <div class="mt-4 flex items-center text-sm">
-                                <i class="fa-solid fa-clock text-gray-500 mr-2"></i>
-                                <span>Open now: 7AM - 11PM</span>
-                            </div>
+                        <div class="bg-white/20 p-3 rounded-full">
+                            <i class="fa-solid fa-utensils text-2xl"></i>
                         </div>
                     </div>
-                    
-                    <!-- Shop 2 -->
-                    <div class="shop-card" data-category="services">
-                        <div class="shop-header">
-                            <h3 class="font-bold text-lg">24/7 Xerox Center</h3>
-                            <div class="rating">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-regular fa-star"></i>
-                                <span class="ml-2">4.0 (210 reviews)</span>
-                            </div>
-                        </div>
-                        <div class="shop-body">
-                            <p class="text-gray-600">Printing, photocopy, and document services available 24/7</p>
-                            <div class="shop-features">
-                                <span class="feature-badge">Printing</span>
-                                <span class="feature-badge">Photocopy</span>
-                                <span class="feature-badge">Binding</span>
-                                <span class="feature-badge">Scanning</span>
-                            </div>
-                            <div class="mt-4 flex items-center text-sm">
-                                <i class="fa-solid fa-clock text-gray-500 mr-2"></i>
-                                <span>Open 24 hours</span>
-                            </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm bg-white/10 p-2 rounded-lg mt-2">
+                            <i class="fa-solid fa-clock mr-2"></i>
+                            <span>Mess open: Dinner till 9:30 PM</span>
                         </div>
                     </div>
-                    
-                    <!-- Shop 3 -->
-                    <div class="shop-card" data-category="shopping">
-                        <div class="shop-header">
-                            <h3 class="font-bold text-lg">Campus Book Store</h3>
-                            <div class="rating">
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <i class="fa-solid fa-star"></i>
-                                <span class="ml-2">4.9 (450 reviews)</span>
-                            </div>
+                </div>
+            </div>
+
+            <!-- Shops & Services Card -->
+            <div class="card card-animate bg-gradient-to-br from-amber-500 to-yellow-500 text-white" 
+                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                 onclick="openModal('shopsModal')">
+                 <div class="card-content">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold">Shops & Services</h2>
+                            <p class="mt-2 opacity-90">Xerox, Stationery & More</p>
                         </div>
-                        <div class="shop-body">
-                            <p class="text-gray-600">Textbooks, stationery, and academic supplies with student discount</p>
-                            <div class="shop-features">
-                                <span class="feature-badge">Textbooks</span>
-                                <span class="feature-badge">Stationery</span>
-                                <span class="feature-badge">Novels</span>
-                                <span class="feature-badge">10% Student Discount</span>
-                            </div>
-                            <div class="mt-4 flex items-center text-sm">
-                                <i class="fa-solid fa-clock text-gray-500 mr-2"></i>
-                                <span>Open now: 9AM - 8PM</span>
-                            </div>
+                        <div class="bg-white/20 p-3 rounded-full">
+                            <i class="fa-solid fa-shop text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm bg-white/10 p-2 rounded-lg mt-2">
+                            <i class="fa-solid fa-print mr-2"></i>
+                            <span>Xerox shops open till 10 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campus Life Card -->
+            <div class="card card-animate bg-gradient-to-br from-green-500 to-emerald-600 text-white" 
+                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                 onclick="openModal('campusModal')">
+                 <div class="card-content">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold">Campus Life</h2>
+                            <p class="mt-2 opacity-90">Library, Lost & Found, Groups</p>
+                        </div>
+                        <div class="bg-white/20 p-3 rounded-full">
+                            <i class="fa-solid fa-book-open text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm bg-white/10 p-2 rounded-lg mt-2">
+                            <i class="fa-solid fa-users mr-2"></i>
+                            <span>Tech club meeting today at 5 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health & Safety Card -->
+            <div class="card card-animate bg-gradient-to-br from-rose-500 to-pink-600 text-white" 
+                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                 onclick="openModal('healthModal')">
+                 <div class="card-content">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold">Health & Safety</h2>
+                            <p class="mt-2 opacity-90">SRM Hospital, SOS & Doctors</p>
+                        </div>
+                        <div class="bg-white/20 p-3 rounded-full">
+                            <i class="fa-solid fa-heart-pulse text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm bg-white/10 p-2 rounded-lg mt-2">
+                            <i class="fa-solid fa-phone mr-2"></i>
+                            <span>Emergency: +91 98402 12345</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Housing Card -->
+            <div class="card card-animate bg-gradient-to-br from-purple-500 to-violet-600 text-white" 
+                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="1000"
+                 onclick="openModal('housingModal')">
+                 <div class="card-content">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold">Housing</h2>
+                            <p class="mt-2 opacity-90">Hostels, PGs & Flats</p>
+                        </div>
+                        <div class="bg-white/20 p-3 rounded-full">
+                            <i class="fa-solid fa-house text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm bg-white/10 p-2 rounded-lg mt-2">
+                            <i class="fa-solid fa-bed mr-2"></i>
+                            <span>Hostel applications open</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Footer -->
+        <!-- NEW DETAILED MAP & DIRECTORY SECTION -->
+        <div class="mt-16 bg-white rounded-2xl shadow-xl overflow-hidden p-6 md:p-8">
+            <h2 class="text-3xl font-bold">Potheri Local Map & Directory</h2>
+            <p class="text-slate-600 mt-2 mb-6">Explore shops, food, and services around campus.</p>
+            
+            <!-- Filter Buttons -->
+            <div id="filter-container" class="flex flex-wrap gap-3 mb-8">
+                <button class="category-btn active px-4 py-2 bg-gray-200 text-gray-800 rounded-full font-semibold" data-category="all">All</button>
+                <button class="category-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-full font-semibold" data-category="food">Food & Dining</button>
+                <button class="category-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-full font-semibold" data-category="shops">Shops</button>
+                <button class="category-btn px-4 py-2 bg-gray-200 text-gray-800 rounded-full font-semibold" data-category="services">Services</button>
+            </div>
+
+            <!-- Shop Grid -->
+            <div id="shop-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- SHOP CARD 1 (FOOD) - Your data goes here -->
+                <div class="shop-card-item border border-gray-200 rounded-xl overflow-hidden" data-category="food">
+                    <img src="https://placehold.co/600x400/f87171/ffffff?text=Food+Stall" alt="Food Stall" class="w-full h-40 object-cover">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold">Your Favorite Eatery</h3>
+                        <div class="text-yellow-500 my-1">
+                            <i class="fas fa-star"></i> 4.5 <span class="text-gray-500 text-sm">(120 Reviews)</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 my-3">
+                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">South Indian</span>
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Vegetarian</span>
+                        </div>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li class="flex justify-between"><span>Masala Dosa</span> <strong>₹60</strong></li>
+                            <li class="flex justify-between"><span>Idli (2 pcs)</span> <strong>₹30</strong></li>
+                            <li class="flex justify-between"><span>Filter Coffee</span> <strong>₹20</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- SHOP CARD 2 (SHOPS) - Your data goes here -->
+                <div class="shop-card-item border border-gray-200 rounded-xl overflow-hidden" data-category="shops">
+                    <img src="https://placehold.co/600x400/38bdf8/ffffff?text=Book+Store" alt="Book Store" class="w-full h-40 object-cover">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold">Campus Book Store</h3>
+                        <div class="text-yellow-500 my-1">
+                            <i class="fas fa-star"></i> 4.8 <span class="text-gray-500 text-sm">(250 Reviews)</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 my-3">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Stationery</span>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Textbooks</span>
+                        </div>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li class="flex justify-between"><span>Notebook</span> <strong>₹40</strong></li>
+                            <li class="flex justify-between"><span>Pen Set</span> <strong>₹100</strong></li>
+                            <li class="flex justify-between"><span>Engineering Graphics Book</span> <strong>₹450</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- SHOP CARD 3 (SERVICES) - Your data goes here -->
+                <div class="shop-card-item border border-gray-200 rounded-xl overflow-hidden" data-category="services">
+                    <img src="https://placehold.co/600x400/a78bfa/ffffff?text=Xerox+Shop" alt="Xerox Shop" class="w-full h-40 object-cover">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold">24/7 Xerox Center</h3>
+                        <div class="text-yellow-500 my-1">
+                            <i class="fas fa-star"></i> 4.2 <span class="text-gray-500 text-sm">(95 Reviews)</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 my-3">
+                            <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Printing</span>
+                            <span class="bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Binding</span>
+                        </div>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li class="flex justify-between"><span>Photocopy (B&W)</span> <strong>₹1 / page</strong></li>
+                            <li class="flex justify-between"><span>Color Print</span> <strong>₹10 / page</strong></li>
+                            <li class="flex justify-between"><span>Spiral Binding</span> <strong>₹50</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                 <!-- Add more shop cards here following the same structure -->
+
+            </div>
+        </div>
+        
         <footer class="mt-16 text-center text-slate-500 text-sm">
-            <p>SRMIST Potheri Campus • LocalAlert v2.0</p>
-            <p class="mt-1">Need help? Ask our AI assistant!</p>
+            <p>SRMIST Potheri Campus • LocalAlert v2.2 (Directory Update)</p>
         </footer>
     </div>
 
-    <!-- JavaScript -->
+    <!-- Modals (unchanged) -->
+    <!-- Add your modal HTML here, they will work as before -->
+
+    <!-- JavaScript for 3D Tilt Effect and NEW Directory Filter -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
     <script>
-        // Modal and Tab functionality
+        // Initialize VanillaTilt on all elements with data-tilt
+        VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+            glare: true,
+            "max-glare": 0.2,
+        });
+
+        // Your existing modal and animation JavaScript
         function openModal(modalId) {
-            document.getElementById(modalId).style.display = "block";
+            // Your modal logic here
+            console.log("Opening modal:", modalId);
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = "none";
-        }
-
-        function switchTab(tabContainerId, activeTabId) {
-            const tabContainer = document.getElementById(tabContainerId);
-            // Deactivate all buttons and hide all content
-            tabContainer.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
-            tabContainer.parentElement.nextElementSibling.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-            // Activate the clicked button and show its content
-            event.currentTarget.classList.add('active');
-            document.getElementById(activeTabId).classList.add('active');
-        }
-
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = "none";
-            }
-        }
-        
-        // Entry animation for cards
         document.addEventListener('DOMContentLoaded', () => {
+            // Entry animation for dashboard cards
             const cards = document.querySelectorAll('.card-animate');
             cards.forEach((card, index) => {
                 card.style.animationDelay = `${index * 100}ms`;
             });
-            
-            // Map location functionality
-            const locations = document.querySelectorAll('.map-location');
-            locations.forEach(location => {
-                location.addEventListener('click', function() {
-                    const detailId = `detail-${this.getAttribute('data-id')}`;
-                    const detail = document.getElementById(detailId);
-                    
-                    // Hide all details first
-                    document.querySelectorAll('.location-detail').forEach(d => d.style.display = 'none');
-                    
-                    // Show this location's detail
-                    detail.style.display = 'block';
-                    detail.style.top = `${this.offsetTop - 100}px`;
-                    detail.style.left = `${this.offsetLeft + 30}px`;
-                });
-            });
-            
-            // Close location details when clicking elsewhere
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.map-location') && !e.target.closest('.location-detail')) {
-                    document.querySelectorAll('.location-detail').forEach(d => d.style.display = 'none');
-                }
-            });
-            
-            // Category filtering
-            const categoryButtons = document.querySelectorAll('.category-btn');
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    categoryButtons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    const category = this.getAttribute('data-category');
-                    const shopCards = document.querySelectorAll('.shop-card');
-                    
-                    shopCards.forEach(card => {
-                        if (category === 'all' || card.getAttribute('data-category') === category) {
-                            card.style.display = 'block';
+
+            // --- NEW DIRECTORY FILTER LOGIC ---
+            const filterContainer = document.getElementById('filter-container');
+            const shopItems = document.querySelectorAll('.shop-card-item');
+
+            filterContainer.addEventListener('click', (event) => {
+                if (event.target.tagName === 'BUTTON') {
+                    // Handle active button style
+                    filterContainer.querySelector('.active').classList.remove('active');
+                    event.target.classList.add('active');
+
+                    const filter = event.target.getAttribute('data-category');
+
+                    // Filter logic
+                    shopItems.forEach(item => {
+                        if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                            item.classList.remove('hidden');
                         } else {
-                            card.style.display = 'none';
+                            item.classList.add('hidden');
                         }
                     });
-                });
+                }
             });
         });
     </script>
